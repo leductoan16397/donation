@@ -1,0 +1,32 @@
+version: '3.9'
+name: donate
+
+services:
+  postgres:
+    image: postgres:14
+    restart: always
+    networks:
+      - donate_network
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "donate-platform"
+    ports:
+      - '127.0.0.1:5432:5432'
+    command: >
+      postgres
+      -c log_statement=all
+    healthcheck:
+      test: "pg_isready -U postgres -d postgres"
+      interval: 2s
+      timeout: 20s
+      retries: 10
+    volumes:
+      - ./sql/create_schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
+      - ./sql/create_database.sql:/docker-entrypoint-initdb.d/create_database.sql
+      - ./db:/var/lib/postgresql/data
+
+networks:
+  donate_network:
+    name: donate_network
+    driver: bridge
